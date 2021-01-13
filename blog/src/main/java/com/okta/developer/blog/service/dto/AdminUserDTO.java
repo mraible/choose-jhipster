@@ -183,6 +183,10 @@ public class AdminUserDTO {
             ", imageUrl='" + imageUrl + '\'' +
             ", activated=" + activated +
             ", langKey='" + langKey + '\'' +
+            ", createdBy=" + createdBy +
+            ", createdDate=" + createdDate +
+            ", lastModifiedBy='" + lastModifiedBy + '\'' +
+            ", lastModifiedDate=" + lastModifiedDate +
             ", authorities=" + authorities +
             "}";
     }

@@ -4,9 +4,9 @@ export interface IBlog {
   id?: number;
   name?: string;
   handle?: string;
-  user?: IUser;
+  user?: IUser | null;
 }
 
 export class Blog implements IBlog {
-  constructor(public id?: number, public name?: string, public handle?: string, public user?: IUser) {}
+  constructor(public id?: number, public name?: string, public handle?: string, public user?: IUser | null) {}
 }

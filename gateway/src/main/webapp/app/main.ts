@@ -15,7 +15,6 @@ import HealthService from './admin/health/health.service';
 import MetricsService from './admin/metrics/metrics.service';
 import LogsService from './admin/logs/logs.service';
 import ConfigurationService from '@/admin/configuration/configuration.service';
-
 import LoginService from './account/login.service';
 import AccountService from './account/account.service';
 
@@ -24,6 +23,7 @@ import TranslationService from '@/locale/translation.service';
 
 import GatewayService from '@/admin/gateway/gateway.service';
 
+import UserOAuth2Service from '@/entities/user/user.oauth2.service';
 /* tslint:disable */
 
 import TagService from '@/entities/blog/tag/tag.service';
@@ -80,12 +80,12 @@ new Vue({
     loginService: () => loginService,
 
     gatewayService: () => new GatewayService(),
-
     healthService: () => new HealthService(),
     configurationService: () => new ConfigurationService(),
     logsService: () => new LogsService(),
     metricsService: () => new MetricsService(),
 
+    userOAuth2Service: () => new UserOAuth2Service(),
     translationService: () => translationService,
     tagService: () => new TagService(),
     productService: () => new ProductService(),

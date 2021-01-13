@@ -6,40 +6,40 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import javax.validation.constraints.*;
-import org.neo4j.springframework.data.core.schema.GeneratedValue;
-import org.neo4j.springframework.data.core.schema.Id;
-import org.neo4j.springframework.data.core.schema.Node;
-import org.neo4j.springframework.data.core.schema.Property;
-import org.neo4j.springframework.data.core.schema.Relationship;
-import org.neo4j.springframework.data.core.support.UUIDStringGenerator;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  * A Post.
  */
-@Node
+@Document(collection = "post")
 public class Post implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(UUIDStringGenerator.class)
     private String id;
 
-    @NotNull
-    @Property("title")
+    @NotNull(message = "must not be null")
+    @Field("title")
     private String title;
 
-    @Property("content")
+    @Field("content")
     private String content;
 
-    @NotNull
-    @Property("date")
+    @NotNull(message = "must not be null")
+    @Field("date")
     private Instant date;
 
-    @Relationship("blog")
+    @DBRef
+    @Field("blog")
     @JsonIgnoreProperties(value = { "user" }, allowSetters = true)
     private Blog blog;
 
+    @DBRef
+    @Field("tags")
     @JsonIgnoreProperties(value = { "posts" }, allowSetters = true)
     private Set<Tag> tags = new HashSet<>();
 

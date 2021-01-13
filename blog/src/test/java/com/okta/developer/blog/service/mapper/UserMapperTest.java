@@ -75,6 +75,7 @@ class UserMapperTest {
         assertThat(users).isNotEmpty().size().isEqualTo(1);
         assertThat(users.get(0).getAuthorities()).isNotNull();
         assertThat(users.get(0).getAuthorities()).isNotEmpty();
+        assertThat(users.get(0).getAuthorities().iterator().next().getName()).isEqualTo("ADMIN");
     }
 
     @Test
@@ -102,6 +103,7 @@ class UserMapperTest {
         assertThat(user).isNotNull();
         assertThat(user.getAuthorities()).isNotNull();
         assertThat(user.getAuthorities()).isNotEmpty();
+        assertThat(user.getAuthorities().iterator().next().getName()).isEqualTo("ADMIN");
     }
 
     @Test

@@ -56,7 +56,7 @@ export default class Blog extends Vue {
     this.blogService()
       .delete(this.removeId)
       .then(() => {
-        const message = this.$t('gatewayApp.blogBlog.deleted', { param: this.removeId });
+        const message = this.$t('blogApp.blogBlog.deleted', { param: this.removeId });
         this.$bvToast.toast(message.toString(), {
           toaster: 'b-toaster-top-center',
           title: 'Info',

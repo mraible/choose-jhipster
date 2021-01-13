@@ -17,15 +17,10 @@ describe('Blog e2e test', () => {
     cy.get('@oauth2Data').then(oauth2Data => {
       cy.keycloackLogin(oauth2Data, 'user');
     });
-    cy.server();
-    cy.route('GET', '/services/blog/api/blogs*').as('entitiesRequest');
+    cy.intercept('GET', '/services/blog/api/blogs*').as('entitiesRequest');
     cy.visit('');
     cy.clickOnEntityMenuItem('blog');
-    cy.wait('@entitiesRequest')
-      .its('responseBody')
-      .then(array => {
-        startingEntitiesCount = array.length;
-      });
+    cy.wait('@entitiesRequest').then(({ request, response }) => (startingEntitiesCount = response.body.length));
     cy.visit('/');
   });
 
@@ -37,8 +32,7 @@ describe('Blog e2e test', () => {
   });
 
   it('should load Blogs', () => {
-    cy.server();
-    cy.route('GET', '/services/blog/api/blogs*').as('entitiesRequest');
+    cy.intercept('GET', '/services/blog/api/blogs*').as('entitiesRequest');
     cy.visit('/');
     cy.clickOnEntityMenuItem('blog');
     cy.wait('@entitiesRequest');
@@ -52,8 +46,7 @@ describe('Blog e2e test', () => {
   });
 
   it('should load details Blog page', () => {
-    cy.server();
-    cy.route('GET', '/services/blog/api/blogs*').as('entitiesRequest');
+    cy.intercept('GET', '/services/blog/api/blogs*').as('entitiesRequest');
     cy.visit('/');
     cy.clickOnEntityMenuItem('blog');
     cy.wait('@entitiesRequest');
@@ -66,8 +59,7 @@ describe('Blog e2e test', () => {
   });
 
   it('should load create Blog page', () => {
-    cy.server();
-    cy.route('GET', '/services/blog/api/blogs*').as('entitiesRequest');
+    cy.intercept('GET', '/services/blog/api/blogs*').as('entitiesRequest');
     cy.visit('/');
     cy.clickOnEntityMenuItem('blog');
     cy.wait('@entitiesRequest');
@@ -78,8 +70,7 @@ describe('Blog e2e test', () => {
   });
 
   it('should load edit Blog page', () => {
-    cy.server();
-    cy.route('GET', '/services/blog/api/blogs*').as('entitiesRequest');
+    cy.intercept('GET', '/services/blog/api/blogs*').as('entitiesRequest');
     cy.visit('/');
     cy.clickOnEntityMenuItem('blog');
     cy.wait('@entitiesRequest');
@@ -92,8 +83,7 @@ describe('Blog e2e test', () => {
   });
 
   it('should create an instance of Blog', () => {
-    cy.server();
-    cy.route('GET', '/services/blog/api/blogs*').as('entitiesRequest');
+    cy.intercept('GET', '/services/blog/api/blogs*').as('entitiesRequest');
     cy.visit('/');
     cy.clickOnEntityMenuItem('blog');
     cy.wait('@entitiesRequest');
@@ -115,7 +105,7 @@ describe('Blog e2e test', () => {
     cy.get(entityCreateSaveButtonSelector).click({ force: true });
     cy.scrollTo('top', { ensureScrollable: false });
     cy.get(entityCreateSaveButtonSelector).should('not.exist');
-    cy.route('GET', '/services/blog/api/blogs*').as('entitiesRequestAfterCreate');
+    cy.intercept('GET', '/services/blog/api/blogs*').as('entitiesRequestAfterCreate');
     cy.visit('/');
     cy.clickOnEntityMenuItem('blog');
     cy.wait('@entitiesRequestAfterCreate');
@@ -124,28 +114,25 @@ describe('Blog e2e test', () => {
   });
 
   it('should delete last instance of Blog', () => {
-    cy.server();
-    cy.route('GET', '/services/blog/api/blogs*').as('entitiesRequest');
-    cy.route('DELETE', '/services/blog/api/blogs/*').as('deleteEntityRequest');
+    cy.intercept('GET', '/services/blog/api/blogs*').as('entitiesRequest');
+    cy.intercept('DELETE', '/services/blog/api/blogs/*').as('deleteEntityRequest');
     cy.visit('/');
     cy.clickOnEntityMenuItem('blog');
-    cy.wait('@entitiesRequest')
-      .its('responseBody')
-      .then(array => {
-        startingEntitiesCount = array.length;
-        if (startingEntitiesCount > 0) {
-          cy.get(entityTableSelector).should('have.lengthOf', startingEntitiesCount);
-          cy.get(entityDeleteButtonSelector).last().click({ force: true });
-          cy.getEntityDeleteDialogHeading('blog').should('exist');
-          cy.get(entityConfirmDeleteButtonSelector).click({ force: true });
-          cy.wait('@deleteEntityRequest');
-          cy.route('GET', '/services/blog/api/blogs*').as('entitiesRequestAfterDelete');
-          cy.visit('/');
-          cy.clickOnEntityMenuItem('blog');
-          cy.wait('@entitiesRequestAfterDelete');
-          cy.get(entityTableSelector).should('have.lengthOf', startingEntitiesCount - 1);
-        }
+    cy.wait('@entitiesRequest').then(({ request, response }) => {
+      startingEntitiesCount = response.body.length;
+      if (startingEntitiesCount > 0) {
+        cy.get(entityTableSelector).should('have.lengthOf', startingEntitiesCount);
+        cy.get(entityDeleteButtonSelector).last().click({ force: true });
+        cy.getEntityDeleteDialogHeading('blog').should('exist');
+        cy.get(entityConfirmDeleteButtonSelector).click({ force: true });
+        cy.wait('@deleteEntityRequest');
+        cy.intercept('GET', '/services/blog/api/blogs*').as('entitiesRequestAfterDelete');
         cy.visit('/');
-      });
+        cy.clickOnEntityMenuItem('blog');
+        cy.wait('@entitiesRequestAfterDelete');
+        cy.get(entityTableSelector).should('have.lengthOf', startingEntitiesCount - 1);
+      }
+      cy.visit('/');
+    });
   });
 });

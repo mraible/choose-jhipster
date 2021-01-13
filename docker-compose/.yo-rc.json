@@ -9,6 +9,6 @@
     "serviceDiscoveryType": "eureka",
     "dockerRepositoryName": "mraible",
     "dockerPushCommand": "docker push",
-    "jwtSecretKey": "OTk0NWNiYzU3ZTk5MzQ4OGRmOWMyMjllM2Y5Y2UwOTJmMTIzOTg5NjE4YjZiY2FhYjRjM2NlNWM5MzllMTViOTJkOGViYjgyZmVhM2I4YTE1ZjIyZGM0MTAyODg2YWYwN2JhYg=="
+    "jwtSecretKey": "ZjgxMGIxMWNjZjRlNjVjZmQ2NjA2NTE3NjE2MTdkN2JhNDlkN2ZlNjc4N2ZlN2IwN2QyZjRlMTg5MDk4ZDBmODkwZmNlMmZhOWRmOGRkNjdkY2ViN2QxNmUwM2M5OGU2Y2Y3Nw=="
   }
 }

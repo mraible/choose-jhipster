@@ -13,13 +13,6 @@
 # http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 # ===================================================================
 
-org:
-  neo4j:
-    migrations:
-      locations-to-scan:
-      packages-to-scan: com.okta.developer.blog.config.neo4j
-      installed-by: blog
-
 eureka:
   client:
     enabled: false
@@ -33,6 +26,11 @@ spring:
   jackson:
     serialization:
       write-durations-as-timestamps: false
+  data:
+    mongodb:
+      host: localhost
+      port: 0
+      database: blog
   mail:
     host: localhost
   main:

@@ -19,7 +19,6 @@ logging:
     tech.jhipster: DEBUG
     org.hibernate.SQL: DEBUG
     com.okta.developer.blog: DEBUG
-    org.neo4j.driver: WARN
 
 eureka:
   instance:
@@ -28,20 +27,6 @@ eureka:
     service-url:
       defaultZone: http://admin:${jhipster.registry.password}@localhost:8761/eureka/
 
-org:
-  neo4j:
-    driver:
-      pool:
-        metrics-enabled: true
-      uri: bolt://localhost:7687
-      # Uncomment to use an authenticated connection
-      # authentication:
-      #     username: neo4j
-      #     password: secret
-    migrations:
-      locations-to-scan:
-      packages-to-scan: com.okta.developer.blog.config.neo4j
-      installed-by: blog
 spring:
   profiles:
     active: dev
@@ -58,6 +43,10 @@ spring:
   jackson:
     serialization:
       indent-output: true
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/?waitQueueMultiple=1000
+      database: blog
   mail:
     host: localhost
     port: 25
@@ -90,12 +79,12 @@ jhipster:
   # CORS is disabled by default on microservices, as you should access them through a gateway.
   # If you want to enable it, please uncomment the configuration below.
   # cors:
-  #     allowed-origins: "*"
-  #     allowed-methods: "*"
-  #     allowed-headers: "*"
-  #     exposed-headers: "Authorization,Link,X-Total-Count"
-  #     allow-credentials: true
-  #     max-age: 1800
+  #   allowed-origins: "*"
+  #   allowed-methods: "*"
+  #   allowed-headers: "*"
+  #   exposed-headers: "Authorization,Link,X-Total-Count"
+  #   allow-credentials: true
+  #   max-age: 1800
   mail: # specific JHipster mail property, for standard properties see MailProperties
     base-url: http://127.0.0.1:8081
   logging:

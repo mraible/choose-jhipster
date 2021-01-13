@@ -4,13 +4,13 @@ import java.io.Serializable;
 import java.util.Objects;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import org.neo4j.springframework.data.core.schema.Id;
-import org.neo4j.springframework.data.core.schema.Node;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * An authority (a security role) used by Spring Security.
  */
-@Node("jhi_authority")
+@Document(collection = "jhi_authority")
 public class Authority implements Serializable {
 
     private static final long serialVersionUID = 1L;

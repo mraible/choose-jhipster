@@ -38,6 +38,22 @@ describe('Login Service test suite', () => {
     expect(loc.href).toBe('//localhost/oauth2/authorization/oidc');
   });
 
+  it('should build url for login with loc.pathname equals to /accessdenied', () => {
+    const loc = { href: '', hostname: 'localhost', pathname: '/accessdenied' };
+
+    loginService.login(loc);
+
+    expect(loc.href).toBe('//localhost/oauth2/authorization/oidc');
+  });
+
+  it('should build url for login with loc.pathname equals to /forbidden', () => {
+    const loc = { href: '', hostname: 'localhost', pathname: '/forbidden' };
+
+    loginService.login(loc);
+
+    expect(loc.href).toBe('//localhost/oauth2/authorization/oidc');
+  });
+
   it('should build url for login behind client proxy', () => {
     const loc = { href: '', port: '8080', hostname: 'localhost', pathname: '/' };
 

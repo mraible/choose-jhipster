@@ -73,7 +73,7 @@ export default class Product extends mixins(JhiDataUtils) {
     this.productService()
       .delete(this.removeId)
       .then(() => {
-        const message = this.$t('gatewayApp.storeProduct.deleted', { param: this.removeId });
+        const message = this.$t('storeApp.storeProduct.deleted', { param: this.removeId });
         this.$bvToast.toast(message.toString(), {
           toaster: 'b-toaster-top-center',
           title: 'Info',

@@ -75,7 +75,7 @@ export default class PostUpdate extends mixins(JhiDataUtils) {
         .then(param => {
           this.isSaving = false;
           this.$router.go(-1);
-          const message = this.$t('gatewayApp.blogPost.updated', { param: param.id });
+          const message = this.$t('blogApp.blogPost.updated', { param: param.id });
           return this.$root.$bvToast.toast(message.toString(), {
             toaster: 'b-toaster-top-center',
             title: 'Info',
@@ -90,7 +90,7 @@ export default class PostUpdate extends mixins(JhiDataUtils) {
         .then(param => {
           this.isSaving = false;
           this.$router.go(-1);
-          const message = this.$t('gatewayApp.blogPost.created', { param: param.id });
+          const message = this.$t('blogApp.blogPost.created', { param: param.id });
           this.$root.$bvToast.toast(message.toString(), {
             toaster: 'b-toaster-top-center',
             title: 'Success',

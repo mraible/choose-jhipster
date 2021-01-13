@@ -11,54 +11,51 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import org.apache.commons.lang3.StringUtils;
-import org.neo4j.springframework.data.core.schema.GeneratedValue;
-import org.neo4j.springframework.data.core.schema.Id;
-import org.neo4j.springframework.data.core.schema.Node;
-import org.neo4j.springframework.data.core.schema.Property;
-import org.neo4j.springframework.data.core.schema.Relationship;
-import org.neo4j.springframework.data.core.support.UUIDStringGenerator;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  * A user.
  */
-@Node("jhi_user")
+@org.springframework.data.mongodb.core.mapping.Document(collection = "jhi_user")
 public class User extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    @Property("user_id")
     private String id;
 
     @NotNull
     @Pattern(regexp = Constants.LOGIN_REGEX)
     @Size(min = 1, max = 50)
+    @Indexed
     private String login;
 
     @Size(max = 50)
-    @Property("first_name")
+    @Field("first_name")
     private String firstName;
 
     @Size(max = 50)
-    @Property("last_name")
+    @Field("last_name")
     private String lastName;
 
     @Email
     @Size(min = 5, max = 254)
+    @Indexed
     private String email;
 
     private boolean activated = false;
 
     @Size(min = 2, max = 10)
-    @Property("lang_key")
+    @Field("lang_key")
     private String langKey;
 
     @Size(max = 256)
-    @Property("image_url")
+    @Field("image_url")
     private String imageUrl;
 
     @JsonIgnore
-    @Relationship("HAS_AUTHORITY")
     private Set<Authority> authorities = new HashSet<>();
 
     public String getId() {
@@ -159,6 +156,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
             ", firstName='" + firstName + '\'' +
             ", lastName='" + lastName + '\'' +
             ", email='" + email + '\'' +
+            ", imageUrl='" + imageUrl + '\'' +
             ", activated='" + activated + '\'' +
             ", langKey='" + langKey + '\'' +
             "}";

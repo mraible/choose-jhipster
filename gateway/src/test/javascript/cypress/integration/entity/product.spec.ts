@@ -17,15 +17,10 @@ describe('Product e2e test', () => {
     cy.get('@oauth2Data').then(oauth2Data => {
       cy.keycloackLogin(oauth2Data, 'user');
     });
-    cy.server();
-    cy.route('GET', '/services/store/api/products*').as('entitiesRequest');
+    cy.intercept('GET', '/services/store/api/products*').as('entitiesRequest');
     cy.visit('');
     cy.clickOnEntityMenuItem('product');
-    cy.wait('@entitiesRequest')
-      .its('responseBody')
-      .then(array => {
-        startingEntitiesCount = array.length;
-      });
+    cy.wait('@entitiesRequest').then(({ request, response }) => (startingEntitiesCount = response.body.length));
     cy.visit('/');
   });
 
@@ -37,8 +32,7 @@ describe('Product e2e test', () => {
   });
 
   it('should load Products', () => {
-    cy.server();
-    cy.route('GET', '/services/store/api/products*').as('entitiesRequest');
+    cy.intercept('GET', '/services/store/api/products*').as('entitiesRequest');
     cy.visit('/');
     cy.clickOnEntityMenuItem('product');
     cy.wait('@entitiesRequest');
@@ -52,8 +46,7 @@ describe('Product e2e test', () => {
   });
 
   it('should load details Product page', () => {
-    cy.server();
-    cy.route('GET', '/services/store/api/products*').as('entitiesRequest');
+    cy.intercept('GET', '/services/store/api/products*').as('entitiesRequest');
     cy.visit('/');
     cy.clickOnEntityMenuItem('product');
     cy.wait('@entitiesRequest');
@@ -66,8 +59,7 @@ describe('Product e2e test', () => {
   });
 
   it('should load create Product page', () => {
-    cy.server();
-    cy.route('GET', '/services/store/api/products*').as('entitiesRequest');
+    cy.intercept('GET', '/services/store/api/products*').as('entitiesRequest');
     cy.visit('/');
     cy.clickOnEntityMenuItem('product');
     cy.wait('@entitiesRequest');
@@ -78,8 +70,7 @@ describe('Product e2e test', () => {
   });
 
   it('should load edit Product page', () => {
-    cy.server();
-    cy.route('GET', '/services/store/api/products*').as('entitiesRequest');
+    cy.intercept('GET', '/services/store/api/products*').as('entitiesRequest');
     cy.visit('/');
     cy.clickOnEntityMenuItem('product');
     cy.wait('@entitiesRequest');
@@ -92,8 +83,7 @@ describe('Product e2e test', () => {
   });
 
   it('should create an instance of Product', () => {
-    cy.server();
-    cy.route('GET', '/services/store/api/products*').as('entitiesRequest');
+    cy.intercept('GET', '/services/store/api/products*').as('entitiesRequest');
     cy.visit('/');
     cy.clickOnEntityMenuItem('product');
     cy.wait('@entitiesRequest');
@@ -112,7 +102,7 @@ describe('Product e2e test', () => {
     cy.get(entityCreateSaveButtonSelector).click({ force: true });
     cy.scrollTo('top', { ensureScrollable: false });
     cy.get(entityCreateSaveButtonSelector).should('not.exist');
-    cy.route('GET', '/services/store/api/products*').as('entitiesRequestAfterCreate');
+    cy.intercept('GET', '/services/store/api/products*').as('entitiesRequestAfterCreate');
     cy.visit('/');
     cy.clickOnEntityMenuItem('product');
     cy.wait('@entitiesRequestAfterCreate');
@@ -121,28 +111,25 @@ describe('Product e2e test', () => {
   });
 
   it('should delete last instance of Product', () => {
-    cy.server();
-    cy.route('GET', '/services/store/api/products*').as('entitiesRequest');
-    cy.route('DELETE', '/services/store/api/products/*').as('deleteEntityRequest');
+    cy.intercept('GET', '/services/store/api/products*').as('entitiesRequest');
+    cy.intercept('DELETE', '/services/store/api/products/*').as('deleteEntityRequest');
     cy.visit('/');
     cy.clickOnEntityMenuItem('product');
-    cy.wait('@entitiesRequest')
-      .its('responseBody')
-      .then(array => {
-        startingEntitiesCount = array.length;
-        if (startingEntitiesCount > 0) {
-          cy.get(entityTableSelector).should('have.lengthOf', startingEntitiesCount);
-          cy.get(entityDeleteButtonSelector).last().click({ force: true });
-          cy.getEntityDeleteDialogHeading('product').should('exist');
-          cy.get(entityConfirmDeleteButtonSelector).click({ force: true });
-          cy.wait('@deleteEntityRequest');
-          cy.route('GET', '/services/store/api/products*').as('entitiesRequestAfterDelete');
-          cy.visit('/');
-          cy.clickOnEntityMenuItem('product');
-          cy.wait('@entitiesRequestAfterDelete');
-          cy.get(entityTableSelector).should('have.lengthOf', startingEntitiesCount - 1);
-        }
+    cy.wait('@entitiesRequest').then(({ request, response }) => {
+      startingEntitiesCount = response.body.length;
+      if (startingEntitiesCount > 0) {
+        cy.get(entityTableSelector).should('have.lengthOf', startingEntitiesCount);
+        cy.get(entityDeleteButtonSelector).last().click({ force: true });
+        cy.getEntityDeleteDialogHeading('product').should('exist');
+        cy.get(entityConfirmDeleteButtonSelector).click({ force: true });
+        cy.wait('@deleteEntityRequest');
+        cy.intercept('GET', '/services/store/api/products*').as('entitiesRequestAfterDelete');
         cy.visit('/');
-      });
+        cy.clickOnEntityMenuItem('product');
+        cy.wait('@entitiesRequestAfterDelete');
+        cy.get(entityTableSelector).should('have.lengthOf', startingEntitiesCount - 1);
+      }
+      cy.visit('/');
+    });
   });
 });

@@ -98,7 +98,7 @@ export default class Post extends mixins(JhiDataUtils) {
     this.postService()
       .delete(this.removeId)
       .then(() => {
-        const message = this.$t('gatewayApp.blogPost.deleted', { param: this.removeId });
+        const message = this.$t('blogApp.blogPost.deleted', { param: this.removeId });
         this.$bvToast.toast(message.toString(), {
           toaster: 'b-toaster-top-center',
           title: 'Info',

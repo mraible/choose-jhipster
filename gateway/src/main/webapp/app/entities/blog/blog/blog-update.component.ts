@@ -2,6 +2,8 @@ import { Component, Vue, Inject } from 'vue-property-decorator';
 
 import { required, minLength } from 'vuelidate/lib/validators';
 
+import UserOAuth2Service from '@/entities/user/user.oauth2.service';
+
 import { IBlog, Blog } from '@/shared/model/blog/blog.model';
 import BlogService from './blog.service';
 
@@ -24,6 +26,10 @@ const validations: any = {
 export default class BlogUpdate extends Vue {
   @Inject('blogService') private blogService: () => BlogService;
   public blog: IBlog = new Blog();
+
+  @Inject('userOAuth2Service') private userOAuth2Service: () => UserOAuth2Service;
+
+  public users: Array<any> = [];
   public isSaving = false;
   public currentLanguage = '';
 
@@ -54,7 +60,7 @@ export default class BlogUpdate extends Vue {
         .then(param => {
           this.isSaving = false;
           this.$router.go(-1);
-          const message = this.$t('gatewayApp.blogBlog.updated', { param: param.id });
+          const message = this.$t('blogApp.blogBlog.updated', { param: param.id });
           return this.$root.$bvToast.toast(message.toString(), {
             toaster: 'b-toaster-top-center',
             title: 'Info',
@@ -69,7 +75,7 @@ export default class BlogUpdate extends Vue {
         .then(param => {
           this.isSaving = false;
           this.$router.go(-1);
-          const message = this.$t('gatewayApp.blogBlog.created', { param: param.id });
+          const message = this.$t('blogApp.blogBlog.created', { param: param.id });
           this.$root.$bvToast.toast(message.toString(), {
             toaster: 'b-toaster-top-center',
             title: 'Success',
@@ -93,5 +99,11 @@ export default class BlogUpdate extends Vue {
     this.$router.go(-1);
   }
 
-  public initRelationships(): void {}
+  public initRelationships(): void {
+    this.userOAuth2Service()
+      .retrieve()
+      .then(res => {
+        this.users = res.data;
+      });
+  }
 }

@@ -8,6 +8,8 @@ import BlogUpdateComponent from '@/entities/blog/blog/blog-update.vue';
 import BlogClass from '@/entities/blog/blog/blog-update.component';
 import BlogService from '@/entities/blog/blog/blog.service';
 
+import UserOAuth2Service from '@/entities/user/user.oauth2.service';
+
 const localVue = createLocalVue();
 
 config.initVueApp(localVue);
@@ -37,6 +39,8 @@ describe('Component Tests', () => {
         router,
         provide: {
           blogService: () => blogServiceStub,
+
+          userOAuth2Service: () => new UserOAuth2Service(),
         },
       });
       comp = wrapper.vm;

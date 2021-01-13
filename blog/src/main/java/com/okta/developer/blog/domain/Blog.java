@@ -2,36 +2,34 @@ package com.okta.developer.blog.domain;
 
 import java.io.Serializable;
 import javax.validation.constraints.*;
-import org.neo4j.springframework.data.core.schema.GeneratedValue;
-import org.neo4j.springframework.data.core.schema.Id;
-import org.neo4j.springframework.data.core.schema.Node;
-import org.neo4j.springframework.data.core.schema.Property;
-import org.neo4j.springframework.data.core.schema.Relationship;
-import org.neo4j.springframework.data.core.support.UUIDStringGenerator;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  * A Blog.
  */
-@Node
+@Document(collection = "blog")
 public class Blog implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(UUIDStringGenerator.class)
     private String id;
 
-    @NotNull
+    @NotNull(message = "must not be null")
     @Size(min = 3)
-    @Property("name")
+    @Field("name")
     private String name;
 
-    @NotNull
+    @NotNull(message = "must not be null")
     @Size(min = 2)
-    @Property("handle")
+    @Field("handle")
     private String handle;
 
-    @Relationship("user")
+    @DBRef
+    @Field("user")
     private User user;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here

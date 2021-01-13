@@ -98,7 +98,7 @@ export default class Tag extends mixins(JhiDataUtils) {
     this.tagService()
       .delete(this.removeId)
       .then(() => {
-        const message = this.$t('gatewayApp.blogTag.deleted', { param: this.removeId });
+        const message = this.$t('blogApp.blogTag.deleted', { param: this.removeId });
         this.$bvToast.toast(message.toString(), {
           toaster: 'b-toaster-top-center',
           title: 'Info',

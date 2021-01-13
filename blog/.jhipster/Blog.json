@@ -34,6 +34,6 @@
   "applications": ["gateway", "blog"],
   "microserviceName": "blog",
   "clientRootFolder": "blog",
-  "databaseType": "neo4j",
-  "changelogDate": "20210111231430"
+  "databaseType": "mongodb",
+  "changelogDate": "20210113194239"
 }

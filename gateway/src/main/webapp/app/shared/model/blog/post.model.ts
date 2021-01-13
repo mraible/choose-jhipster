@@ -6,8 +6,8 @@ export interface IPost {
   title?: string;
   content?: string;
   date?: Date;
-  blog?: IBlog;
-  tags?: ITag[];
+  blog?: IBlog | null;
+  tags?: ITag[] | null;
 }
 
 export class Post implements IPost {
@@ -16,7 +16,7 @@ export class Post implements IPost {
     public title?: string,
     public content?: string,
     public date?: Date,
-    public blog?: IBlog,
-    public tags?: ITag[]
+    public blog?: IBlog | null,
+    public tags?: ITag[] | null
   ) {}
 }

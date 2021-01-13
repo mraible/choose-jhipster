@@ -5,30 +5,29 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 import javax.validation.constraints.*;
-import org.neo4j.springframework.data.core.schema.GeneratedValue;
-import org.neo4j.springframework.data.core.schema.Id;
-import org.neo4j.springframework.data.core.schema.Node;
-import org.neo4j.springframework.data.core.schema.Property;
-import org.neo4j.springframework.data.core.schema.Relationship;
-import org.neo4j.springframework.data.core.support.UUIDStringGenerator;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  * A Tag.
  */
-@Node
+@Document(collection = "tag")
 public class Tag implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(UUIDStringGenerator.class)
     private String id;
 
-    @NotNull
+    @NotNull(message = "must not be null")
     @Size(min = 2)
-    @Property("name")
+    @Field("name")
     private String name;
 
+    @DBRef
+    @Field("posts")
     @JsonIgnoreProperties(value = { "blog", "tags" }, allowSetters = true)
     private Set<Post> posts = new HashSet<>();
 

@@ -15,16 +15,12 @@
     "enableSwaggerCodegen": false,
     "enableTranslation": true,
     "jhiPrefix": "jhi",
-    "languages": [
-      "en"
-    ],
+    "languages": ["en"],
     "messageBroker": false,
     "prodDatabaseType": "postgresql",
     "searchEngine": false,
     "skipClient": false,
-    "testFrameworks": [
-      "cypress"
-    ],
+    "testFrameworks": ["cypress"],
     "websocket": false,
     "applicationType": "gateway",
     "reactive": true,
@@ -43,14 +39,9 @@
     "otherModules": [],
     "pages": [],
     "nativeLanguage": "en",
-    "creationTimestamp": 1610406750939,
-    "lastLiquibaseTimestamp": 1610406990000,
-    "entities": [
-      "Tag",
-      "Product",
-      "Blog",
-      "Post"
-    ],
+    "creationTimestamp": 1610566839916,
+    "lastLiquibaseTimestamp": 1610567079000,
+    "entities": ["Tag", "Product", "Blog", "Post"],
     "appFolder": "gateway"
   }
 }

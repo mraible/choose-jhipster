@@ -20,9 +20,9 @@ application {
     reactive true
     packageName com.okta.developer.blog
     authenticationType oauth2
-    databaseType neo4j
-    devDatabaseType neo4j
-    prodDatabaseType neo4j
+    databaseType mongodb
+    devDatabaseType mongodb
+    prodDatabaseType mongodb
     enableHibernateCache false
     serverPort 8081,
     serviceDiscoveryType eureka

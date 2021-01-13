@@ -3,9 +3,9 @@ package com.okta.developer.blog.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.time.Instant;
-import org.neo4j.springframework.data.core.schema.Property;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  * Base abstract class for entities which will hold definitions for created, last modified, created by,
@@ -15,21 +15,21 @@ public abstract class AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Property("created_by")
+    @Field("created_by")
     @JsonIgnore
     private String createdBy;
 
     @CreatedDate
-    @Property("created_date")
+    @Field("created_date")
     @JsonIgnore
     private Instant createdDate = Instant.now();
 
-    @Property("last_modified_by")
+    @Field("last_modified_by")
     @JsonIgnore
     private String lastModifiedBy;
 
     @LastModifiedDate
-    @Property("last_modified_date")
+    @Field("last_modified_date")
     @JsonIgnore
     private Instant lastModifiedDate = Instant.now();
 

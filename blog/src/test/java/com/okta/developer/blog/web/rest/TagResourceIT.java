@@ -12,9 +12,6 @@ import java.time.Duration;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.http.MediaType;
@@ -152,6 +149,8 @@ class TagResourceIT {
             .expectHeader()
             .contentType(MediaType.APPLICATION_JSON)
             .expectBody()
+            .jsonPath("$.[*].id")
+            .value(hasItem(tag.getId()))
             .jsonPath("$.[*].name")
             .value(hasItem(DEFAULT_NAME));
     }
@@ -172,6 +171,8 @@ class TagResourceIT {
             .expectHeader()
             .contentType(MediaType.APPLICATION_JSON)
             .expectBody()
+            .jsonPath("$.id")
+            .value(is(tag.getId()))
             .jsonPath("$.name")
             .value(is(DEFAULT_NAME));
     }

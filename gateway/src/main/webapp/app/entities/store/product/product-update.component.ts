@@ -57,7 +57,7 @@ export default class ProductUpdate extends mixins(JhiDataUtils) {
         .then(param => {
           this.isSaving = false;
           this.$router.go(-1);
-          const message = this.$t('gatewayApp.storeProduct.updated', { param: param.id });
+          const message = this.$t('storeApp.storeProduct.updated', { param: param.id });
           return this.$root.$bvToast.toast(message.toString(), {
             toaster: 'b-toaster-top-center',
             title: 'Info',
@@ -72,7 +72,7 @@ export default class ProductUpdate extends mixins(JhiDataUtils) {
         .then(param => {
           this.isSaving = false;
           this.$router.go(-1);
-          const message = this.$t('gatewayApp.storeProduct.created', { param: param.id });
+          const message = this.$t('storeApp.storeProduct.created', { param: param.id });
           this.$root.$bvToast.toast(message.toString(), {
             toaster: 'b-toaster-top-center',
             title: 'Success',
