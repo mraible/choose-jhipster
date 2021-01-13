@@ -1,12 +1,16 @@
 package com.okta.developer.blog.repository;
 
 import com.okta.developer.blog.domain.Blog;
-import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
+import java.util.List;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
 /**
- * Spring Data MongoDB reactive repository for the Blog entity.
+ * Spring Data SQL repository for the Blog entity.
  */
 @SuppressWarnings("unused")
 @Repository
-public interface BlogRepository extends ReactiveMongoRepository<Blog, String> {}
+public interface BlogRepository extends JpaRepository<Blog, Long> {
+    @Query("select blog from Blog blog where blog.user.login = ?#{principal.preferredUsername}")
+    List<Blog> findByUserIsCurrentUser();
+}

@@ -13,15 +13,10 @@ import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 import tech.jhipster.web.util.HeaderUtil;
-import tech.jhipster.web.util.reactive.ResponseUtil;
+import tech.jhipster.web.util.ResponseUtil;
 
 /**
  * REST controller for managing {@link com.okta.developer.blog.domain.Blog}.
@@ -54,7 +49,7 @@ public class BlogResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/blogs")
-    public Mono<ResponseEntity<Blog>> createBlog(@Valid @RequestBody Blog blog) throws URISyntaxException {
+    public ResponseEntity<Blog> createBlog(@Valid @RequestBody Blog blog) throws URISyntaxException {
         log.debug("REST request to save Blog : {}", blog);
         if (blog.getId() != null) {
             throw new BadRequestAlertException("A new blog cannot already have an ID", ENTITY_NAME, "idexists");
@@ -63,20 +58,11 @@ public class BlogResource {
             // Save user in case it's new and only exists in gateway
             userRepository.save(blog.getUser());
         }
-        return blogRepository
-            .save(blog)
-            .map(
-                result -> {
-                    try {
-                        return ResponseEntity
-                            .created(new URI("/api/blogs/" + result.getId()))
-                            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId()))
-                            .body(result);
-                    } catch (URISyntaxException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            );
+        Blog result = blogRepository.save(blog);
+        return ResponseEntity
+            .created(new URI("/api/blogs/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .body(result);
     }
 
     /**
@@ -89,7 +75,7 @@ public class BlogResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/blogs")
-    public Mono<ResponseEntity<Blog>> updateBlog(@Valid @RequestBody Blog blog) throws URISyntaxException {
+    public ResponseEntity<Blog> updateBlog(@Valid @RequestBody Blog blog) throws URISyntaxException {
         log.debug("REST request to update Blog : {}", blog);
         if (blog.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -98,16 +84,11 @@ public class BlogResource {
             // Save user in case it's new and only exists in gateway
             userRepository.save(blog.getUser());
         }
-        return blogRepository
-            .save(blog)
-            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-            .map(
-                result ->
-                    ResponseEntity
-                        .ok()
-                        .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, result.getId()))
-                        .body(result)
-            );
+        Blog result = blogRepository.save(blog);
+        return ResponseEntity
+            .ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, blog.getId().toString()))
+            .body(result);
     }
 
     /**
@@ -121,7 +102,7 @@ public class BlogResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/blogs", consumes = "application/merge-patch+json")
-    public Mono<ResponseEntity<Blog>> partialUpdateBlog(@NotNull @RequestBody Blog blog) throws URISyntaxException {
+    public ResponseEntity<Blog> partialUpdateBlog(@NotNull @RequestBody Blog blog) throws URISyntaxException {
         log.debug("REST request to update Blog partially : {}", blog);
         if (blog.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -131,7 +112,7 @@ public class BlogResource {
             userRepository.save(blog.getUser());
         }
 
-        Mono<Blog> result = blogRepository
+        Optional<Blog> result = blogRepository
             .findById(blog.getId())
             .map(
                 existingBlog -> {
@@ -146,17 +127,12 @@ public class BlogResource {
                     return existingBlog;
                 }
             )
-            .flatMap(blogRepository::save);
+            .map(blogRepository::save);
 
-        return result
-            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-            .map(
-                res ->
-                    ResponseEntity
-                        .ok()
-                        .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, res.getId()))
-                        .body(res)
-            );
+        return ResponseUtil.wrapOrNotFound(
+            result,
+            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, blog.getId().toString())
+        );
     }
 
     /**
@@ -165,18 +141,8 @@ public class BlogResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of blogs in body.
      */
     @GetMapping("/blogs")
-    public Mono<List<Blog>> getAllBlogs() {
+    public List<Blog> getAllBlogs() {
         log.debug("REST request to get all Blogs");
-        return blogRepository.findAll().collectList();
-    }
-
-    /**
-     * {@code GET  /blogs} : get all the blogs as a stream.
-     * @return the {@link Flux} of blogs.
-     */
-    @GetMapping(value = "/blogs", produces = MediaType.APPLICATION_STREAM_JSON_VALUE)
-    public Flux<Blog> getAllBlogsAsStream() {
-        log.debug("REST request to get all Blogs as a stream");
         return blogRepository.findAll();
     }
 
@@ -187,9 +153,9 @@ public class BlogResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the blog, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/blogs/{id}")
-    public Mono<ResponseEntity<Blog>> getBlog(@PathVariable String id) {
+    public ResponseEntity<Blog> getBlog(@PathVariable Long id) {
         log.debug("REST request to get Blog : {}", id);
-        Mono<Blog> blog = blogRepository.findById(id);
+        Optional<Blog> blog = blogRepository.findById(id);
         return ResponseUtil.wrapOrNotFound(blog);
     }
 
@@ -200,14 +166,12 @@ public class BlogResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/blogs/{id}")
-    @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    public Mono<ResponseEntity<Void>> deleteBlog(@PathVariable String id) {
+    public ResponseEntity<Void> deleteBlog(@PathVariable Long id) {
         log.debug("REST request to delete Blog : {}", id);
-        return blogRepository
-            .deleteById(id)
-            .map(
-                result ->
-                    ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build()
-            );
+        blogRepository.deleteById(id);
+        return ResponseEntity
+            .noContent()
+            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
+            .build();
     }
 }

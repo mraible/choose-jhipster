@@ -8,7 +8,6 @@ import com.okta.developer.blog.domain.User;
 public class UserDTO {
 
     private String id;
-
     private String login;
 
     public UserDTO() {

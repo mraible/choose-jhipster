@@ -4,43 +4,41 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
+import javax.persistence.*;
 import javax.validation.constraints.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  * A Tag.
  */
-@Document(collection = "tag")
+@Entity
+@Table(name = "tag")
 public class Tag implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @NotNull(message = "must not be null")
+    @NotNull
     @Size(min = 2)
-    @Field("name")
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @DBRef
-    @Field("posts")
+    @ManyToMany(mappedBy = "tags")
     @JsonIgnoreProperties(value = { "blog", "tags" }, allowSetters = true)
     private Set<Post> posts = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public Tag id(String id) {
+    public Tag id(Long id) {
         this.id = id;
         return this;
     }

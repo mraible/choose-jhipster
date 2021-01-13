@@ -1,9 +1,9 @@
 package com.okta.developer.blog.repository;
 
 import com.okta.developer.blog.domain.Authority;
-import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
- * Spring Data MongoDB repository for the {@link Authority} entity.
+ * Spring Data JPA repository for the {@link Authority} entity.
  */
-public interface AuthorityRepository extends ReactiveMongoRepository<Authority, String> {}
+public interface AuthorityRepository extends JpaRepository<Authority, String> {}

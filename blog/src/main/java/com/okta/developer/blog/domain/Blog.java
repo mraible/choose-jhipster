@@ -1,47 +1,45 @@
 package com.okta.developer.blog.domain;
 
 import java.io.Serializable;
+import javax.persistence.*;
 import javax.validation.constraints.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  * A Blog.
  */
-@Document(collection = "blog")
+@Entity
+@Table(name = "blog")
 public class Blog implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @NotNull(message = "must not be null")
+    @NotNull
     @Size(min = 3)
-    @Field("name")
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @NotNull(message = "must not be null")
+    @NotNull
     @Size(min = 2)
-    @Field("handle")
+    @Column(name = "handle", nullable = false)
     private String handle;
 
-    @DBRef
-    @Field("user")
+    @ManyToOne
     private User user;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public Blog id(String id) {
+    public Blog id(Long id) {
         this.id = id;
         return this;
     }

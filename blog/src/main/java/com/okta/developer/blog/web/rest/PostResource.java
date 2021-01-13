@@ -5,7 +5,6 @@ import com.okta.developer.blog.repository.PostRepository;
 import com.okta.developer.blog.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
@@ -14,27 +13,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.util.UriComponentsBuilder;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
-import tech.jhipster.web.util.reactive.ResponseUtil;
+import tech.jhipster.web.util.ResponseUtil;
 
 /**
  * REST controller for managing {@link com.okta.developer.blog.domain.Post}.
  */
 @RestController
 @RequestMapping("/api")
+@Transactional
 public class PostResource {
 
     private final Logger log = LoggerFactory.getLogger(PostResource.class);
@@ -58,25 +53,16 @@ public class PostResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/posts")
-    public Mono<ResponseEntity<Post>> createPost(@Valid @RequestBody Post post) throws URISyntaxException {
+    public ResponseEntity<Post> createPost(@Valid @RequestBody Post post) throws URISyntaxException {
         log.debug("REST request to save Post : {}", post);
         if (post.getId() != null) {
             throw new BadRequestAlertException("A new post cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        return postRepository
-            .save(post)
-            .map(
-                result -> {
-                    try {
-                        return ResponseEntity
-                            .created(new URI("/api/posts/" + result.getId()))
-                            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId()))
-                            .body(result);
-                    } catch (URISyntaxException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            );
+        Post result = postRepository.save(post);
+        return ResponseEntity
+            .created(new URI("/api/posts/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .body(result);
     }
 
     /**
@@ -89,21 +75,16 @@ public class PostResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/posts")
-    public Mono<ResponseEntity<Post>> updatePost(@Valid @RequestBody Post post) throws URISyntaxException {
+    public ResponseEntity<Post> updatePost(@Valid @RequestBody Post post) throws URISyntaxException {
         log.debug("REST request to update Post : {}", post);
         if (post.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        return postRepository
-            .save(post)
-            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-            .map(
-                result ->
-                    ResponseEntity
-                        .ok()
-                        .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, result.getId()))
-                        .body(result)
-            );
+        Post result = postRepository.save(post);
+        return ResponseEntity
+            .ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, post.getId().toString()))
+            .body(result);
     }
 
     /**
@@ -117,13 +98,13 @@ public class PostResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/posts", consumes = "application/merge-patch+json")
-    public Mono<ResponseEntity<Post>> partialUpdatePost(@NotNull @RequestBody Post post) throws URISyntaxException {
+    public ResponseEntity<Post> partialUpdatePost(@NotNull @RequestBody Post post) throws URISyntaxException {
         log.debug("REST request to update Post partially : {}", post);
         if (post.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
 
-        Mono<Post> result = postRepository
+        Optional<Post> result = postRepository
             .findById(post.getId())
             .map(
                 existingPost -> {
@@ -142,50 +123,35 @@ public class PostResource {
                     return existingPost;
                 }
             )
-            .flatMap(postRepository::save);
+            .map(postRepository::save);
 
-        return result
-            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-            .map(
-                res ->
-                    ResponseEntity
-                        .ok()
-                        .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, res.getId()))
-                        .body(res)
-            );
+        return ResponseUtil.wrapOrNotFound(
+            result,
+            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, post.getId().toString())
+        );
     }
 
     /**
      * {@code GET  /posts} : get all the posts.
      *
      * @param pageable the pagination information.
-     * @param request a {@link ServerHttpRequest} request.
      * @param eagerload flag to eager load entities from relationships (This is applicable for many-to-many).
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of posts in body.
      */
     @GetMapping("/posts")
-    public Mono<ResponseEntity<List<Post>>> getAllPosts(
+    public ResponseEntity<List<Post>> getAllPosts(
         Pageable pageable,
-        ServerHttpRequest request,
         @RequestParam(required = false, defaultValue = "false") boolean eagerload
     ) {
         log.debug("REST request to get a page of Posts");
-        return postRepository
-            .count()
-            .zipWith(postRepository.findAllBy(pageable).collectList())
-            .map(
-                countWithEntities -> {
-                    return ResponseEntity
-                        .ok()
-                        .headers(
-                            PaginationUtil.generatePaginationHttpHeaders(
-                                UriComponentsBuilder.fromHttpRequest(request),
-                                new PageImpl<>(countWithEntities.getT2(), pageable, countWithEntities.getT1())
-                            )
-                        )
-                        .body(countWithEntities.getT2());
-                }
-            );
+        Page<Post> page;
+        if (eagerload) {
+            page = postRepository.findAllWithEagerRelationships(pageable);
+        } else {
+            page = postRepository.findAll(pageable);
+        }
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
     /**
@@ -195,9 +161,9 @@ public class PostResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the post, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/posts/{id}")
-    public Mono<ResponseEntity<Post>> getPost(@PathVariable String id) {
+    public ResponseEntity<Post> getPost(@PathVariable Long id) {
         log.debug("REST request to get Post : {}", id);
-        Mono<Post> post = postRepository.findOneWithEagerRelationships(id);
+        Optional<Post> post = postRepository.findOneWithEagerRelationships(id);
         return ResponseUtil.wrapOrNotFound(post);
     }
 
@@ -208,14 +174,12 @@ public class PostResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/posts/{id}")
-    @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    public Mono<ResponseEntity<Void>> deletePost(@PathVariable String id) {
+    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
         log.debug("REST request to delete Post : {}", id);
-        return postRepository
-            .deleteById(id)
-            .map(
-                result ->
-                    ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id)).build()
-            );
+        postRepository.deleteById(id);
+        return ResponseEntity
+            .noContent()
+            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
+            .build();
     }
 }

@@ -14,3 +14,15 @@ eureka:
   client:
     service-url:
       defaultZone: http://admin:${jhipster.registry.password}@localhost:8761/eureka/
+
+spring:
+  security:
+    oauth2:
+      client:
+        provider:
+          oidc:
+            issuer-uri: https://dev-6974382.okta.com/oauth2/default
+        registration:
+          oidc:
+            client-id: 0oa3pkxski1zlp68L5d6
+            client-secret: qv0kudNotbwjp6QHUnj1mmjI1FEIYXaBSVzC_Lgb

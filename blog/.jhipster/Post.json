@@ -46,6 +46,6 @@
   "applications": ["gateway", "blog"],
   "microserviceName": "blog",
   "clientRootFolder": "blog",
-  "databaseType": "mongodb",
-  "changelogDate": "20210113194339"
+  "databaseType": "sql",
+  "changelogDate": "20210113203320"
 }

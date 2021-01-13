@@ -2,8 +2,6 @@ application {
   config {
     applicationType gateway
     baseName gateway
-    clientFramework vue
-    reactive true
     packageName com.okta.developer.gateway
     authenticationType oauth2
     prodDatabaseType postgresql
@@ -17,12 +15,9 @@ application {
   config {
     applicationType microservice
     baseName blog
-    reactive true
     packageName com.okta.developer.blog
     authenticationType oauth2
-    databaseType mongodb
-    devDatabaseType mongodb
-    prodDatabaseType mongodb
+    prodDatabaseType mysql
     enableHibernateCache false
     serverPort 8081,
     serviceDiscoveryType eureka
@@ -34,7 +29,6 @@ application {
   config {
     applicationType microservice
     baseName store
-    reactive true
     packageName com.okta.developer.store
     authenticationType oauth2
     databaseType mongodb

@@ -5,54 +5,53 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
+import javax.persistence.*;
 import javax.validation.constraints.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  * A Post.
  */
-@Document(collection = "post")
+@Entity
+@Table(name = "post")
 public class Post implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @NotNull(message = "must not be null")
-    @Field("title")
+    @NotNull
+    @Column(name = "title", nullable = false)
     private String title;
 
-    @Field("content")
+    @Lob
+    @Column(name = "content", nullable = false)
     private String content;
 
-    @NotNull(message = "must not be null")
-    @Field("date")
+    @NotNull
+    @Column(name = "date", nullable = false)
     private Instant date;
 
-    @DBRef
-    @Field("blog")
+    @ManyToOne
     @JsonIgnoreProperties(value = { "user" }, allowSetters = true)
     private Blog blog;
 
-    @DBRef
-    @Field("tags")
+    @ManyToMany
+    @JoinTable(name = "rel_post__tag", joinColumns = @JoinColumn(name = "post_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
     @JsonIgnoreProperties(value = { "posts" }, allowSetters = true)
     private Set<Tag> tags = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public Post id(String id) {
+    public Post id(Long id) {
         this.id = id;
         return this;
     }

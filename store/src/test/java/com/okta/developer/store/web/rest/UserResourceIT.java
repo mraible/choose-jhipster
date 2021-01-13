@@ -1,7 +1,11 @@
 package com.okta.developer.store.web.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.okta.developer.store.IntegrationTest;
 import com.okta.developer.store.domain.Authority;
@@ -18,15 +22,16 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * Integration tests for the {@link UserResource} REST controller.
  */
-@AutoConfigureWebTestClient
+@AutoConfigureMockMvc
 @WithMockUser(authorities = AuthoritiesConstants.ADMIN)
 @IntegrationTest
 class UserResourceIT {
@@ -52,13 +57,17 @@ class UserResourceIT {
     private UserMapper userMapper;
 
     @Autowired
-    private WebTestClient webTestClient;
+    private CacheManager cacheManager;
+
+    @Autowired
+    private MockMvc restUserMockMvc;
 
     private User user;
 
     @BeforeEach
-    public void setupCsrf() {
-        webTestClient = webTestClient.mutateWith(csrf());
+    public void setup() {
+        cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).clear();
+        cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).clear();
     }
 
     /**
@@ -84,7 +93,7 @@ class UserResourceIT {
      * Setups the database with one user.
      */
     public static User initTestUser(UserRepository userRepository) {
-        userRepository.deleteAll().block();
+        userRepository.deleteAll();
         User user = createEntity();
         return user;
     }
@@ -95,71 +104,55 @@ class UserResourceIT {
     }
 
     @Test
-    void getAllUsers() {
+    void getAllUsers() throws Exception {
         // Initialize the database
-        userRepository.save(user).block();
+        userRepository.save(user);
 
         // Get all the users
-        AdminUserDTO foundUser = webTestClient
-            .get()
-            .uri("/api/admin/users?sort=id,DESC")
-            .accept(MediaType.APPLICATION_JSON)
-            .exchange()
-            .expectStatus()
-            .isOk()
-            .expectHeader()
-            .contentType(MediaType.APPLICATION_JSON)
-            .returnResult(AdminUserDTO.class)
-            .getResponseBody()
-            .blockFirst();
-
-        assertThat(foundUser.getLogin()).isEqualTo(DEFAULT_LOGIN);
-        assertThat(foundUser.getFirstName()).isEqualTo(DEFAULT_FIRSTNAME);
-        assertThat(foundUser.getLastName()).isEqualTo(DEFAULT_LASTNAME);
-        assertThat(foundUser.getEmail()).isEqualTo(DEFAULT_EMAIL);
-        assertThat(foundUser.getImageUrl()).isEqualTo(DEFAULT_IMAGEURL);
-        assertThat(foundUser.getLangKey()).isEqualTo(DEFAULT_LANGKEY);
+        restUserMockMvc
+            .perform(get("/api/admin/users").accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$.[*].login").value(hasItem(DEFAULT_LOGIN)))
+            .andExpect(jsonPath("$.[*].firstName").value(hasItem(DEFAULT_FIRSTNAME)))
+            .andExpect(jsonPath("$.[*].lastName").value(hasItem(DEFAULT_LASTNAME)))
+            .andExpect(jsonPath("$.[*].email").value(hasItem(DEFAULT_EMAIL)))
+            .andExpect(jsonPath("$.[*].imageUrl").value(hasItem(DEFAULT_IMAGEURL)))
+            .andExpect(jsonPath("$.[*].langKey").value(hasItem(DEFAULT_LANGKEY)));
     }
 
     @Test
-    void getUser() {
+    void getUser() throws Exception {
         // Initialize the database
-        userRepository.save(user).block();
+        userRepository.save(user);
+
+        assertThat(cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).get(user.getLogin())).isNull();
 
         // Get the user
-        webTestClient
-            .get()
-            .uri("/api/admin/users/{login}", user.getLogin())
-            .exchange()
-            .expectStatus()
-            .isOk()
-            .expectHeader()
-            .contentType(MediaType.APPLICATION_JSON)
-            .expectBody()
-            .jsonPath("$.login")
-            .isEqualTo(user.getLogin())
-            .jsonPath("$.firstName")
-            .isEqualTo(DEFAULT_FIRSTNAME)
-            .jsonPath("$.lastName")
-            .isEqualTo(DEFAULT_LASTNAME)
-            .jsonPath("$.email")
-            .isEqualTo(DEFAULT_EMAIL)
-            .jsonPath("$.imageUrl")
-            .isEqualTo(DEFAULT_IMAGEURL)
-            .jsonPath("$.langKey")
-            .isEqualTo(DEFAULT_LANGKEY);
+        restUserMockMvc
+            .perform(get("/api/admin/users/{login}", user.getLogin()))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$.login").value(user.getLogin()))
+            .andExpect(jsonPath("$.firstName").value(DEFAULT_FIRSTNAME))
+            .andExpect(jsonPath("$.lastName").value(DEFAULT_LASTNAME))
+            .andExpect(jsonPath("$.email").value(DEFAULT_EMAIL))
+            .andExpect(jsonPath("$.imageUrl").value(DEFAULT_IMAGEURL))
+            .andExpect(jsonPath("$.langKey").value(DEFAULT_LANGKEY));
+
+        assertThat(cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).get(user.getLogin())).isNotNull();
     }
 
     @Test
-    void getNonExistingUser() {
-        webTestClient.get().uri("/api/admin/users/unknown").exchange().expectStatus().isNotFound();
+    void getNonExistingUser() throws Exception {
+        restUserMockMvc.perform(get("/api/admin/users/unknown")).andExpect(status().isNotFound());
     }
 
     @Test
     void testUserEquals() throws Exception {
         TestUtil.equalsVerifier(User.class);
         User user1 = new User();
-        user1.setId(DEFAULT_ID);
+        user1.setId("id1");
         User user2 = new User();
         user2.setId(user1.getId());
         assertThat(user1).isEqualTo(user2);
@@ -252,6 +245,6 @@ class UserResourceIT {
     }
 
     private void assertPersistedUsers(Consumer<List<User>> userAssertion) {
-        userAssertion.accept(userRepository.findAll().collectList().block());
+        userAssertion.accept(userRepository.findAll());
     }
 }

@@ -1,26 +1,30 @@
 package com.okta.developer.blog.web.rest;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.okta.developer.blog.IntegrationTest;
 import com.okta.developer.blog.config.TestSecurityConfiguration;
 import com.okta.developer.blog.domain.User;
 import com.okta.developer.blog.repository.UserRepository;
 import com.okta.developer.blog.security.AuthoritiesConstants;
-import com.okta.developer.blog.service.dto.UserDTO;
+import javax.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Integration tests for the {@link UserResource} REST controller.
  */
-@AutoConfigureWebTestClient
+@AutoConfigureMockMvc
 @WithMockUser(authorities = AuthoritiesConstants.ADMIN)
 @IntegrationTest
 class PublicUserResourceIT {
@@ -31,39 +35,41 @@ class PublicUserResourceIT {
     private UserRepository userRepository;
 
     @Autowired
-    private WebTestClient webTestClient;
+    private EntityManager em;
+
+    @Autowired
+    private CacheManager cacheManager;
+
+    @Autowired
+    private MockMvc restUserMockMvc;
 
     private User user;
 
     @BeforeEach
-    public void setupCsrf() {
-        webTestClient = webTestClient.mutateWith(csrf());
+    public void setup() {
+        cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).clear();
+        cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).clear();
     }
 
     @BeforeEach
     public void initTest() {
-        user = UserResourceIT.initTestUser(userRepository);
+        user = UserResourceIT.initTestUser(userRepository, em);
     }
 
     @Test
-    void getAllPublicUsers() {
+    @Transactional
+    void getAllPublicUsers() throws Exception {
         // Initialize the database
-        userRepository.save(user).block();
+        userRepository.saveAndFlush(user);
 
         // Get all the users
-        UserDTO foundUser = webTestClient
-            .get()
-            .uri("/api/users?sort=id,DESC")
-            .accept(MediaType.APPLICATION_JSON)
-            .exchange()
-            .expectStatus()
-            .isOk()
-            .expectHeader()
-            .contentType(MediaType.APPLICATION_JSON)
-            .returnResult(UserDTO.class)
-            .getResponseBody()
-            .blockFirst();
-
-        assertThat(foundUser.getLogin()).isEqualTo(DEFAULT_LOGIN);
+        restUserMockMvc
+            .perform(get("/api/users?sort=id,desc").accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$.[*].login").value(hasItem(DEFAULT_LOGIN)))
+            .andExpect(jsonPath("$.[*].email").doesNotExist())
+            .andExpect(jsonPath("$.[*].imageUrl").doesNotExist())
+            .andExpect(jsonPath("$.[*].langKey").doesNotExist());
     }
 }
